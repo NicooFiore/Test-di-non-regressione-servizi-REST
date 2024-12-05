@@ -12,8 +12,7 @@ def connessioneDataBase():
      # Configurazione connessione
     server="ntsql013"
     database = "ES_R_42"
-    username = 'SISTEMI\\fiorenc'
-    driver = '{ODBC Driver 18 for SQL Server}'  # Verifica se hai questo driver installato
+    driver = '{ODBC Driver 18 for SQL Server}'  # Verifica se questo driver è installato
     connection_string = f'DRIVER={driver};SERVER={server};DATABASE={database};Trusted_Connection=yes;Encrypt=no'
 
     try:
@@ -23,14 +22,11 @@ def connessioneDataBase():
         print(f"Errore di connessione: {e}")
         return None
 
-#base_url = "http://toinsxa0040:9050/api"
-#Leggi 
+ 
 token="hQAMDIovkn4hVK8Lgb/2mDfgoKeNx1pCeawdZh4t4EmXBnMx0yw5klKJVjMSQaGZlfZbr11dNWQxkaWb91GJPEXxMTg5TqWum6lnsZ+qaRDf2Yl/wumY3w=="
 idDocumento=''
 parametriDaRimuovereDocLeggi=[ "Dati.IdDocumento","Dati.NumRegistraz","Dati.NumDocOriginale"]
 parametriDaRimuovereDocCrea=[ "IdDocumento","Documento.IdDocumento","Documento.NumRegistraz","Documento.NumDocOriginale"]
-'''parametriDaRimuovereDocLeggi=["aa"]
-parametriDaRimuovereDocCrea=["aa"]'''
 direttivaBase="c:\\Users\\fiore\\Documents\\TEST NON REGRESSIONE\\TEST\\ORV\\"
 PercorsoFile=''
 nomeCartellaTest="TEST"
@@ -39,9 +35,7 @@ isDocumento=False
 direttivaWinMerge="C:\\Program Files\\WinMerge\\WinMergeU.exe"
 isCreaORVdaOPV=False
 isCreaOPV=False
-server="NTSQL013"
-database = "ES_R_42"
-username = 'SISTEMI\\fiorenc'
+
 
 
 def creaToken():
@@ -84,7 +78,6 @@ def checkToken():
         return None
 
     
-#token=creaToken()
 
 def eseguiQuery(conn,order_id,DBGruppo):
     cursor = conn.cursor()  # Crea un cursore
@@ -191,13 +184,10 @@ def crea(token,DBgruppo,url,payload,directory,NomeFile,conn):
         "X-BC-Gruppo" : f"{DBgruppo}"
     }
     
-    #print(f"Payload inviato a {url_crea}: {json.dumps(payload, indent=4)}")
+    
     response = requests.post(url_crea, headers=headers, data=json.dumps(payload))
     json_data=response.json()
-    #print(idDaSalvare)
-    ''' json_data=rimuovi_null(response.json())
-    rimuovi_attributi(json_data)
-    salvaSuFile(fileDascrivere,directory,json_data)'''
+    
     
     if response.status_code == 200:
         if isDocumento:    
@@ -208,14 +198,10 @@ def crea(token,DBgruppo,url,payload,directory,NomeFile,conn):
             salvaSuFile(NomeFile,directory,json_data)
             statoDocumento=-1
             esito=response.json().get("Risposta", {}).get("Esito")
-            print(esito)
             if(esito==1):
                 statoDocumento=-1
                 while statoDocumento!=0:
                  statoDocumento=eseguiQuery(conn,idDocumento,DBgruppo)
-                print(statoDocumento)
-                '''if(statoDocumento==0):
-                    time.sleep(1)'''
             return idDocumento
         else:
             json_data=rimuovi_null(json_data)
@@ -236,9 +222,7 @@ def leggi(token,DBgruppo,url,payload,valoreId,directory,NomeFile):
     }
     if isDocumento:
         if "IdDocumento" in payload:
-            print(payload)
             payload["IdDocumento"] =valoreId 
-            print(payload)
             print(f"Modificata la chiave  'IdDocumento' con il valore '{valoreId}'.")
             response = requests.post(url_leggi, headers=headers, data=json.dumps(payload))
         else:
@@ -247,8 +231,7 @@ def leggi(token,DBgruppo,url,payload,valoreId,directory,NomeFile):
     else :
         response = requests.post(url_leggi, headers=headers, data=json.dumps(payload))
     
-    #print(response.json())
-    #time.sleep(5)
+    
 
     if response.status_code == 200:
        json_data=response.json()
@@ -349,7 +332,6 @@ def rimuovi_attributi(json_data,parametriDaRimuovereDoc):
         if chiave_esiste:
             if isinstance(temp_data, dict)  and attributi[-1] in temp_data:
              # Rimuovi l'ultima chiave solo se esiste
-             #print(f"Removing {attributi[-1]} from {temp_data}")
              temp_data.pop(attributi[-1])
             elif isinstance(temp_data, list):  # Se l'elemento è una lista
                 for item in temp_data:
@@ -397,23 +379,22 @@ def leggi_excel(percorso_file_excel):
         corpo_json = row['CorpoJSON'] if pd.notna(row['CorpoJSON']) else {}
         ListaParametridaRimuovere = row['AttributiDaRimuovere'] if pd.notna(row['AttributiDaRimuovere']) else []
         NomeFile = row['NomeFile'] if pd.notna(row['NomeFile']) else 'Valore di default'
-        try:
-             corpo_json = json.loads(row['CorpoJSON'])  # Converte la stringa JSON in un dizionario Python
-        except json.JSONDecodeError as e:
-            print(f"Errore nel parsing del JSON: {e}")
-            corpo_json = {}
-        
-        if isinstance(ListaParametridaRimuovere, str) and len(ListaParametridaRimuovere) > 0:
+        if corpo_json:
             try:
-                ListaParametridaRimuovere = ast.literal_eval(ListaParametridaRimuovere)
-            except (ValueError, SyntaxError):
-                print(f"Errore nel parsing della lista: {ListaParametridaRimuovere}")
-                ListaParametridaRimuovere = []
-        #print(idDsalvare)
-        #print(corpo_json)
+                corpo_json = json.loads(row['CorpoJSON'])  # Converte la stringa JSON in un dizionario Python
+            except json.JSONDecodeError as e:
+                print(f"Errore nel parsing del JSON: {e}")
+                corpo_json = {}
+            
+            if isinstance(ListaParametridaRimuovere, str) and len(ListaParametridaRimuovere) > 0:
+                try:
+                    ListaParametridaRimuovere = ast.literal_eval(ListaParametridaRimuovere)
+                except (ValueError, SyntaxError):
+                    print(f"Errore nel parsing della lista: {ListaParametridaRimuovere}")
+                    ListaParametridaRimuovere = []
+        
 
-        if(NomeFile=="Crea - Diego - CodIva non più valido - 497266"):
-            print("Punto del problema")
+        
         sigleDoc = ["OPA", "OPV", "ORA", "ORP", "ORV", "RDA", "RDL"]
         global isCreaORVdaOPV
         global isCreaOPV
@@ -441,27 +422,16 @@ def leggi_excel(percorso_file_excel):
             isDocumento=False
         
         if servizio == "CREA":
-            # Chiamata alla funzione di creazione con i parametri necessari
          order_id=crea(token,DBGruppo,url,corpo_json,PercorsoFile,NomeFile,conn)
          
-         #time.sleep(3)
-         
         elif servizio == "LEGGI":
-        # Chiamata alla funzione di lettura
-         
          leggi(token,DBGruppo,url,corpo_json,order_id,PercorsoFile,NomeFile)
-         #time.sleep(3)
         elif servizio == "AGGIORNA":
-        # Chiamata alla funzione di lettura
-         
          aggiorna(token,DBGruppo,url,corpo_json,order_id,PercorsoFile,NomeFile,conn)
-         time.sleep(3) 
+        
          
         elif servizio == "ELIMINA":
-        # Chiamata alla funzione di lettura
-         #time.sleep(5)
          elimina(token,DBGruppo,url,corpo_json,order_id,PercorsoFile,NomeFile)
-         #time.sleep(5)
         elif servizio == "NUOVA CARTELLA":
          PercorsoFile= creaNuovaCartella(CartellaTest, url)
     # Aggiungi altre condizioni per gli altri servizi
